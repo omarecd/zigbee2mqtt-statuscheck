@@ -30,7 +30,7 @@ def on_message(client, userdata, msg):
         if '"state":"ON"' in state:
             print("Test was successful!")
         else:
-            print("Test failed!")
+            print("Test failed! :( ")
 
 def main():
     # Create MQTT client instance
