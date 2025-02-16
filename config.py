@@ -6,7 +6,7 @@ MQTT_KEEPALIVE = 60
 # Topics to subscribe to
 TOPICS = [
 #    "home/sensors/#",     # Example topic - change these to your needed topics
-    "#"      # Example topic - change these to your needed topics
+    "zigbee2mqtt/0-plug-xmas"      # Example topic - change these to your needed topics
 ]
 
 # Client settings

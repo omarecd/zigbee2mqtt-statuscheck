@@ -1,7 +1,8 @@
 # Zigbee2MQTT Status Check
 
-A simple MQTT client that subscribes to MQTT topics and displays received messages, useful for monitoring Zigbee2MQTT messages.
+I have a nice Zigbee2MQTT setup, but I wanted to know when devices go offline. So my idea was to have a simple way to regularly check the status in this way:
 
-## Setup
-
-1. Clone the repository:
+Considering that the device is OFF, I send an instruction to turn it ON.
+I wait around 5 seconds and I send a second message to check if the device is ON.
+If the device is ON, it will say: Tests was successful.
+If the device is not ON, then the it will say: Test Failed.image.png
