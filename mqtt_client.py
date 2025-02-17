@@ -1,7 +1,9 @@
 import paho.mqtt.client as mqtt
-import sys
 import time
-from config import *
+import requests
+from config import CLIENT_ID, MQTT_BROKER, MQTT_PORT, MQTT_KEEPALIVE
+from notification_secrets import PHONE_NUMBER, API_KEY
+
 
 # Global variable to track device state
 device_state = None
@@ -21,7 +23,7 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     """Callback function that runs when a message is received"""
     global device_state
-    print(f"Received message on topic {msg.topic}: {msg.payload.decode()}")
+    #print(f"Received message on topic {msg.topic}: {msg.payload.decode()}")
     
     if msg.topic == "zigbee2mqtt/0-plug-xmas":
         state = msg.payload.decode()
@@ -30,7 +32,20 @@ def on_message(client, userdata, msg):
         elif '"state":"OFF"' in state:
             device_state = "OFF"
 
-def run_status_check():
+
+def send_failure_notification():
+    """Send a GET request to notify failure"""
+    #API_URL = "https://api.callmebot.com/whatsapp.php?phone=+32495389695&text=Zigbee+devices+are+presenting+a+problem&apikey=828428"  # Replace with your actual API URL
+    API_URL = f"https://api.callmebot.com/whatsapp.php?phone=+{PHONE_NUMBER}&text=Zigbee+devices+are+presenting+a+problem&apikey={API_KEY}"
+    try:
+        response = requests.get(API_URL)
+        if response.status_code == 200:
+            print("Notification sent successfully!")
+    except Exception as e:
+        print(f"❌ Error sending notification: {e}")
+
+
+def main():
     # Create MQTT client instance
     client = mqtt.Client(CLIENT_ID)
     
@@ -44,29 +59,43 @@ def run_status_check():
         
         # Start the loop in background
         client.loop_start()
+        time.sleep(3)
         
-        # Wait for connection to establish
-        time.sleep(2)
-        
-        # Step 1: Send ON command
-        print("\nStep 1: Sending ON command...")
-        client.publish("zigbee2mqtt/0-plug-xmas/set", '{"state":"ON"}')
-        
-        # Wait for response
-        time.sleep(5)
-        
-        # Step 2: Check if device responded
-        print("\nStep 2: Checking device state...")
+
+        print("\nStep 0: Checking device state...")
         client.publish("zigbee2mqtt/0-plug-xmas/get", '{"state":""}')
-        
-        # Wait for response
-        time.sleep(5)
-        
+        time.sleep(3)
+
+
         # Final check
         if device_state == "ON":
-            print("\n✅ Test SUCCESSFUL: Device is ON as expected!")
+            print("\nThe device is being used now, the test is not possible")
+
         else:
-            print("\n❌ Test FAILED: Device did not turn ON!")
+            print("\nThe device is not being used. Proceeding with test")
+
+            # Step 1: Send ON command
+            print("\nStep 1: Sending ON command...")
+            client.publish("zigbee2mqtt/0-plug-xmas/set", '{"state":"ON"}')
+            time.sleep(3)
+
+
+            # Step 2: Check if device responded
+            print("\nStep 2: Checking device state...")
+            client.publish("zigbee2mqtt/0-plug-xmas/get", '{"state":""}')
+            time.sleep(3)
+
+
+            # Final check
+            if device_state == "ON":
+                print("\n✅ Test SUCCESSFUL: Device turned ON as expected!")
+                print("\nTurning OFF the device and finishing test")
+                client.publish("zigbee2mqtt/0-plug-xmas/set", '{"state":"OFF"}')
+
+
+            else:
+                print("\n❌ Test FAILED: Device did not turn ON!")
+                send_failure_notification()
         
         # Clean disconnect
         client.loop_stop()
@@ -76,12 +105,12 @@ def run_status_check():
         print("\nDisconnecting from broker")
         client.loop_stop()
         client.disconnect()
-        sys.exit(0)
+        return
     except Exception as e:
         print(f"Error: {e}")
         client.loop_stop()
         client.disconnect()
-        sys.exit(1)
+        return
 
 if __name__ == "__main__":
-    run_status_check() 
+    main()
