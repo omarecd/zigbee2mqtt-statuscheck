@@ -6,5 +6,3 @@ For a preselected device (somethinhg that I can turn ON and OFF at any time with
 If it's OFF, I try to turn it ON and then I check the status.
 If the status is ON, voilà ! Everything is OK. The device is turned OFF again.
 If the status is not ON, then there is an issue somewhere. A notification is sent to me, by Whatsapp.
-
-Nice, right ? :)
