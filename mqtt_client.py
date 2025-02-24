@@ -108,6 +108,7 @@ def main():
         return
     except Exception as e:
         print(f"Error: {e}")
+        send_failure_notification()
         client.loop_stop()
         client.disconnect()
         return
