@@ -3,6 +3,7 @@ import time
 import requests
 from config import CLIENT_ID, MQTT_BROKER, MQTT_PORT, MQTT_KEEPALIVE
 from notification_secrets import PHONE_NUMBER, API_KEY
+from datetime import datetime
 
 
 # Global variable to track device state
@@ -46,6 +47,8 @@ def send_failure_notification():
 
 
 def main():
+
+    print (datetime.now())
     # Create MQTT client instance
     client = mqtt.Client(CLIENT_ID)
     
